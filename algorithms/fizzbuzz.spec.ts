@@ -77,6 +77,14 @@ describe("FizzBuzz algorith tests", () => {
     test("Check if the function returns an object", () => {
         expectTypeOf(FizzBuzz(2,3)).returns.toBeObject()
     })
+    test("Spy on the function", () => {
+        
+        const spyer = vi.spyOn(FizzBuzz)
+        FizzBuzz(0,3)
+        spyer.mock.calls.length === 1
+        expect(spyer).toHaveBeenCalled()
+        spyer.mock.results
+    })
     
     
 })

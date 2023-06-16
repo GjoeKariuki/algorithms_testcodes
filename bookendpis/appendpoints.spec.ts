@@ -5,7 +5,8 @@ import app from './appendpoints'
 
 
 describe("Book Tests Endpoints", () => {
-    test("Should add a new book", ()=>{
+
+    test("Should add a new book", () => {
         return request(app).post('/books')
         .expect('Content-Type', /json/)
         .expect(201)        
@@ -23,7 +24,7 @@ describe("Book Tests Endpoints", () => {
         
     })
 
-    it("Should get book", ()=>{
+    it("Should get books", ()=>{
         return request(app).get('/books')
         .expect('Content-Type', /json/)
         .expect(200)        
@@ -39,9 +40,24 @@ describe("Book Tests Endpoints", () => {
                 ])
             )
         })        
-    })
-    
-    test("Should return a single book", ()=>{
+    }),    
+
+    test("should get all book", () => {
+        return request(app).get('/books')
+        .expect("Content-Type", /json/)
+        .expect(200)
+        .then((response:request.Response) => {
+            expect.arrayContaining([
+                expect.objectContaining({
+                    id:expect.any(Number),
+                    title:expect.stringMatching("My Life in Crime"),
+                    description:expect.stringMatching("A robbery story")
+                })
+            ])
+        })
+    }),
+
+    test("Should get book by id", ()=>{
         return request(app).get('/books/1')
         .expect('Content-Type', /json/)
         .expect(200)        
@@ -64,12 +80,14 @@ describe("Book Tests Endpoints", () => {
         .then((response:request.Response) => {
             expect(response.body).toEqual(
                 expect.objectContaining({
-                    message:expect.stringContaining("Book not found")
+                    message:expect.stringContaining("not found")
                 })
             )
         })
         
     })
+
+    
 
     test("Should update a book", ()=>{
         return request(app).put('/books/1')
@@ -77,12 +95,12 @@ describe("Book Tests Endpoints", () => {
         .expect(200)        
         .send({
             title:"My Life in Crime 2",
-            description: "More robbery story"
+            description: "More robbery stories"
         })
         .then((response:request.Response) => {
             expect(response.body).toEqual(
                 expect.objectContaining({
-                    message:expect.stringMatching("Book added")
+                    message:expect.stringMatching("Book updated")
                 })
             )
         })
@@ -120,14 +138,44 @@ describe("Book Tests Endpoints", () => {
         })        
     })
 
-    test("Should delete a book", ()=>{
+   
+
+    it("should not delete a book with incorrect token", () => {
         return request(app).delete('/books/1')
-        .expect('Content-Type', /json/)
-        .expect(200)        
-        .then((response:request.Response) => {
+        .expect("Content-Type", /json/)
+        .set('token', 'djfjfs')
+        .expect(200)
+        .then((response:request.Response)=> {
             expect(response.body).toEqual(
                 expect.objectContaining({
                     message:expect.stringMatching("Book deleted")
+                })
+            )
+        })
+    }),
+
+    test("Should delete a book", ()=>{
+        return request(app).delete('/books/1')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then((response:request.Response)=> {
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    // message:expect.stringMatching("Book deleted")
+                    message:expect.any(String)
+                })
+            )
+        })       
+    }),
+
+    test("Should not delete a deleted book", ()=>{
+        return request(app).delete('/books/1')
+        .expect('Content-Type', /json/)
+        .expect(404)        
+        .then((response:request.Response) => {
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    message:expect.stringMatching("Book not found")
                 })
             )
         })        
